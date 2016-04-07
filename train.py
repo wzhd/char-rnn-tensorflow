@@ -51,8 +51,15 @@ def train(args):
     model = Model(args)
 
     with tf.Session() as sess:
-        tf.initialize_all_variables().run()
+        latest_checkpoint = tf.train.latest_checkpoint(args.save_dir)
         saver = tf.train.Saver(tf.all_variables())
+        if latest_checkpoint is not None:
+            print('checkpoint restored using {}'.format(latest_checkpoint))
+            saver.restore(sess, latest_checkpoint)
+        else:
+            print('training a new model')
+            tf.initialize_all_variables().run()
+
         for e in range(args.num_epochs):
             sess.run(tf.assign(model.lr, args.learning_rate * (args.decay_rate ** e)))
             data_loader.reset_batch_pointer()
